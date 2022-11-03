@@ -6,6 +6,7 @@ Playground for Argo java. Make sure to have the proper permissions. [RBAC](#rbac
 - [Simple Workflow Logs](#simple-workflow-logs-)
 - [Create Cron Workflow](#create-cron-workflow)
 - [List Cron Workflows](#list-cron-workflows)
+- [Update Cron Workflow](#update-cron-workflows)
 - [Argo Client Dependency](#argo-client-dependency)
 - [RBAC](#rbac)
 
@@ -62,7 +63,7 @@ Note the difference in behavior between logs and archived logs from [here](https
 
 Let's replicate the same using the Java Client.
 
-TODO: currently only works on running workflows (pod must be up)
+**TODO**: currently only works on running workflows (pod must be up)
 
 ## Create Cron Workflow
 
@@ -81,6 +82,48 @@ cron-whalesay-b4nqt   55s   N/A        23m        5 * * * *              false
 
 We can also list using the SDK. Running the `ListCronWorkflows` class will give us the same result as above.
 
+Running the list endpoint after a Cron Workflow has run, bring out the following error. Will need
+to look into this one
+
+```
+Exception in thread "main" com.google.gson.JsonSyntaxException: java.lang.IllegalStateException: Expected BEGIN_OBJECT but was STRING at line 1 column 1291 path $.items[0].status.lastScheduledTime
+        at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$Adapter.read(ReflectiveTypeAdapterFactory.java:270)
+        at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$1.read(ReflectiveTypeAdapterFactory.java:161)
+        at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$Adapter.read(ReflectiveTypeAdapterFactory.java:266)
+        at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$1.read(ReflectiveTypeAdapterFactory.java:161)
+        at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$Adapter.read(ReflectiveTypeAdapterFactory.java:266)
+        at com.google.gson.internal.bind.TypeAdapterRuntimeTypeWrapper.read(TypeAdapterRuntimeTypeWrapper.java:41)
+        at com.google.gson.internal.bind.CollectionTypeAdapterFactory$Adapter.read(CollectionTypeAdapterFactory.java:82)
+        at com.google.gson.internal.bind.CollectionTypeAdapterFactory$Adapter.read(CollectionTypeAdapterFactory.java:61)
+        at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$1.read(ReflectiveTypeAdapterFactory.java:161)
+        at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$Adapter.read(ReflectiveTypeAdapterFactory.java:266)
+        at com.google.gson.Gson.fromJson(Gson.java:1058)
+        at com.google.gson.Gson.fromJson(Gson.java:1016)
+        at com.google.gson.Gson.fromJson(Gson.java:959)
+        at io.argoproj.workflow.JSON.deserialize(JSON.java:146)
+        at io.argoproj.workflow.ApiClient.deserialize(ApiClient.java:795)
+        at io.argoproj.workflow.ApiClient.handleResponse(ApiClient.java:1001)
+        at io.argoproj.workflow.ApiClient.execute(ApiClient.java:925)
+        at io.argoproj.workflow.apis.CronWorkflowServiceApi.cronWorkflowServiceListCronWorkflowsWithHttpInfo(CronWorkflowServiceApi.java:777)
+        at io.argoproj.workflow.apis.CronWorkflowServiceApi.cronWorkflowServiceListCronWorkflows(CronWorkflowServiceApi.java:748)
+        at ListCronWorkflows.main(ListCronWorkflows.java:16)
+Caused by: java.lang.IllegalStateException: Expected BEGIN_OBJECT but was STRING at line 1 column 1291 path $.items[0].status.lastScheduledTime
+        at com.google.gson.stream.JsonReader.beginObject(JsonReader.java:395)
+        at com.google.gson.internal.bind.ReflectiveTypeAdapterFactory$Adapter.read(ReflectiveTypeAdapterFactory.java:259
+```
+
+We need to update the JSON java class to add an adapter for the `Instant` type. 
+
+## Update Cron Workflows
+
+Let's work on picking up our new Cron Workflow and update the specs. Here we need to:
+
+1. Get the Cron Workflow we want to update
+2. Keep the metadata information, as we need name, resource version,...
+3. Update the specs
+4. Send the PUT call.
+
+In our case we will be updating the workflow created before `my-cron-workflow`.
 
 # Argo Client Dependency
 
@@ -155,7 +198,7 @@ metadata:
 rules:
 - apiGroups: ["argoproj.io"]
   resources: ["cronworkflows"]
-  verbs: ["get", "delete", "list", "update", "create", "watch"]
+  verbs: ["get", "delete", "list", "update", "create", "watch", "patch"]
 EOF
 
 kubectl create rolebinding cron-workflow --role=cron-workflow --serviceaccount=<your-namespace>:test -n <your-namespace>
@@ -164,4 +207,5 @@ kubectl create rolebinding cron-workflow --role=cron-workflow --serviceaccount=<
 # Resources
 
 - [Kubectl](https://github.com/kubernetes-client/java/blob/master/docs/kubectl-equivalence-in-java.md#kubectl-logs)
+  - Just experimenting to see if it can help us get the log information.
 - [Argo Workflows Java](https://github.com/argoproj/argo-workflows/tree/master/sdks/java/client/docs)

@@ -22,7 +22,7 @@ public class CreateCronWorkflow {
 
         IoArgoprojWorkflowV1alpha1CronWorkflow cronWorkflow = new IoArgoprojWorkflowV1alpha1CronWorkflow();
         cronWorkflow.setKind("CronWorkflow");
-        cronWorkflow.setMetadata(new V1ObjectMeta().generateName("cron-whalesay-"));
+        cronWorkflow.setMetadata(new V1ObjectMeta().generateName("cron-whalesay-").name("my-cron-workflow"));
         cronWorkflow.setSpec(
             new IoArgoprojWorkflowV1alpha1CronWorkflowSpec()
                 .schedule("5 * * * *")

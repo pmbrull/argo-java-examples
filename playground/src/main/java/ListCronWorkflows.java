@@ -3,6 +3,8 @@ import io.argoproj.workflow.apis.CronWorkflowServiceApi;
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1CronWorkflow;
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1CronWorkflowList;
 
+import java.util.List;
+
 public class ListCronWorkflows {
 
     public static void main(String[] args) {
@@ -24,9 +26,16 @@ public class ListCronWorkflows {
                     null
             );
 
-            for (IoArgoprojWorkflowV1alpha1CronWorkflow cronWorkflow : result.getItems()) {
-                System.out.println(cronWorkflow.getMetadata().getName());
+            List<IoArgoprojWorkflowV1alpha1CronWorkflow> items = result.getItems();
+
+            if (items != null) {
+                for (IoArgoprojWorkflowV1alpha1CronWorkflow cronWorkflow : items) {
+                    System.out.println(cronWorkflow.getMetadata().getName());
+                }
             }
+
+
+
         } catch (ApiException e) {
             System.err.println("Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow");
             System.err.println("Status code: " + e.getCode());
