@@ -1,9 +1,12 @@
 # Argo Java Client examples
 
-Playground for Argo java.
+Playground for Argo java. Make sure to have the proper permissions. [RBAC](#rbac) can help there.
 
 - [Create Simple Workflow](#create-simple-workflow)
+- [Simple Workflow Logs](#simple-workflow-logs-)
+- [Create Cron Workflow](#create-cron-workflow)
 - [Argo Client Dependency](#argo-client-dependency)
+- [RBAC](#rbac)
 
 To get this running you need a local Argo cluster. The easiest way is to follow the [Getting Started](https://argoproj.github.io/argo-workflows/quick-start/) guide.
 
@@ -60,6 +63,19 @@ Let's replicate the same using the Java Client.
 
 TODO: currently only works on running workflows (pod must be up)
 
+## Create Cron Workflow
+
+It's pretty cool how we can just create a definition of a Workflow, wrap it up inside the Cron Spec and
+convert it to a Cron Workflow.
+
+After running, we can check the created workflow by:
+
+```bash
+❯ argo cron list -n <your-namespace>
+NAME                  AGE   LAST RUN   NEXT RUN   SCHEDULE    TIMEZONE   SUSPENDED
+cron-whalesay-b4nqt   55s   N/A        23m        5 * * * *              false
+```
+
 # Argo Client Dependency
 
 We are using the following [client](https://github.com/argoproj/argo-workflows/tree/master/sdks/java).
@@ -70,6 +86,74 @@ connection from Maven to GitHub requires to set up authentication as explained i
 In order to simplify the process with this playground, we are pushing the jar together with the code. Note that the
 testing has been done using Argo `v3.4.2`. Update the jar or properly set up your `settings.xml` and repositories
 to handle the right version.
+
+# RBAC
+
+To get this going we need:
+- A **Role** providing the permissions
+- A **Service Account** from which we will create the Token
+- A **Role Binding** to link the service account to the role
+
+For example:
+
+```bash
+# Create role for workflows
+kubectl create role test --verb=get,delete,watch,list,create,update --resource=workflows.argoproj.io -n <your-namespace>
+
+# Create a service account
+kubectl create sa test -n <your-namespace>
+
+# Link the role to the SA
+kubectl create rolebinding test --role=test --serviceaccount=<your-namespace>:test -n <your-namespace>
+
+# Prepare the token
+kubectl apply -n <your-namespace> -f - <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test3.service-account-token
+  annotations:
+    kubernetes.io/service-account.name: test
+type: kubernetes.io/service-account-token
+EOF
+ARGO_TOKEN="Bearer $(kubectl get secret -n saas test.service-account-token -o=jsonpath='{.data.token}' | base64 --decode)"
+```
+
+This will give us permissions for the workflows, but to run the examples we also need to access Pods and Cron Workflows.
+
+## Pods RBAC
+
+```bash
+kubectl apply -n <your-namespace> -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: pod-and-pod-logs-reader
+rules:
+- apiGroups: [""]
+  resources: ["pods", "pods/log"]
+  verbs: ["get", "list", "watch"]
+EOF
+
+kubectl create rolebinding pod-and-pod-logs-reader --role=pod-and-pod-logs-reader --serviceaccount=<your-namespace>:test -n <your-namespace>
+```
+
+## Cron Workflows RBAC
+
+```bash
+kubectl apply -n <your-namespace> -f - <<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cron-workflow
+rules:
+- apiGroups: ["argoproj.io"]
+  resources: ["cronworkflows"]
+  verbs: ["get", "delete", "list", "update", "create", "watch"]
+EOF
+
+kubectl create rolebinding cron-workflow --role=cron-workflow --serviceaccount=<your-namespace>:test -n <your-namespace>
+```
 
 # Resources
 
