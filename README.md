@@ -5,6 +5,7 @@ Playground for Argo java. Make sure to have the proper permissions. [RBAC](#rbac
 - [Create Simple Workflow](#create-simple-workflow)
 - [Simple Workflow Logs](#simple-workflow-logs-)
 - [Create Cron Workflow](#create-cron-workflow)
+- [List Cron Workflows](#list-cron-workflows)
 - [Argo Client Dependency](#argo-client-dependency)
 - [RBAC](#rbac)
 
@@ -75,6 +76,11 @@ After running, we can check the created workflow by:
 NAME                  AGE   LAST RUN   NEXT RUN   SCHEDULE    TIMEZONE   SUSPENDED
 cron-whalesay-b4nqt   55s   N/A        23m        5 * * * *              false
 ```
+
+## List Cron Workflows
+
+We can also list using the SDK. Running the `ListCronWorkflows` class will give us the same result as above.
+
 
 # Argo Client Dependency
 
