@@ -19,9 +19,9 @@
         <dependency>
             <groupId>io.argoproj.workflow</groupId>
             <artifactId>argo-client-java</artifactId>
-            <version>v3.4.2</version>
+            <version>v3.4.5</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/src/main/resources/argo-client-java-v3.4.2.jar</systemPath>
+            <systemPath>${project.basedir}/src/main/resources/argo-client-java-v3.4.5.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>com.google.code.gson</groupId>

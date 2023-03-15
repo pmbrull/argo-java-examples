@@ -1,3 +1,4 @@
+import com.google.gson.Gson;
 import io.argoproj.workflow.ApiClient;
 import io.argoproj.workflow.ApiException;
 import io.argoproj.workflow.Configuration;

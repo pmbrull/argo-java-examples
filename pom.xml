@@ -33,7 +33,7 @@
             <dependency>
                 <groupId>io.argoproj.workflow</groupId>
                 <artifactId>argo-client-java</artifactId>
-                <version>v3.4.2</version>
+                <version>v3.4.5</version>
             </dependency>
             <dependency>
                <groupId>com.google.code.gson</groupId>

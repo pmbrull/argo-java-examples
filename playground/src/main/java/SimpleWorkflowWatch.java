@@ -10,7 +10,7 @@ import io.kubernetes.client.openapi.models.V1ObjectMeta;
 
 import java.util.List;
 
-public class SimpleWorkflowLogs {
+public class SimpleWorkflowWatch {
   public static void main(String[] args) {
 
     WorkflowClient workflowClient = new WorkflowClient();
@@ -42,32 +42,22 @@ public class SimpleWorkflowLogs {
       // Create the workflow
       IoArgoprojWorkflowV1alpha1Workflow created = apiInstance.workflowServiceCreateWorkflow(workflowClient.namespace, workflowCreateRequest);
 
-      // Wait for the whalesay to finish
-      Thread.sleep(30 * 1000);
-
-      /*
-      This will throw:
-        Exception in thread "main" com.google.gson.JsonSyntaxException: com.google.gson.stream.MalformedJsonException:
-        Use JsonReader.setLenient(true) to accept malformed JSON at line 2 column 2 path $
-       */
-      StreamResultOfIoArgoprojWorkflowV1alpha1LogEntry result = apiInstance.workflowServiceWorkflowLogs(
+      // This will throw an APIException due to a timeout, way before the 120 seconds
+      // The whalesay command also finished successfully in just 20 sec
+      apiInstance.workflowServiceWatchWorkflows(
           workflowClient.namespace,
-          created.getMetadata().getName(),
-          created.getMetadata().getName(),
-              "main",
-              null,
-              null,
-              null,
-              null,
-              null,
-              false,
-              null,
-              null,
-              null,
-              null,
-              null
-      );
-      System.out.println(result);
+          null,
+          String.format("metadata.name=%s", created.getMetadata().getName()),
+          false,
+          false,
+          null,
+          null,
+          "120",
+          null,
+          null,
+          null
+          );
+
 
     } catch (ApiException e) {
       System.err.println("Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow");
@@ -75,8 +65,6 @@ public class SimpleWorkflowLogs {
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
       e.printStackTrace();
-    } catch (InterruptedException e) {
-      throw new RuntimeException(e);
     }
   }
 }

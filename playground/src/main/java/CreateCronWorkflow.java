@@ -1,3 +1,4 @@
+import com.google.gson.Gson;
 import io.argoproj.workflow.ApiException;
 import io.argoproj.workflow.apis.CronWorkflowServiceApi;
 import io.argoproj.workflow.models.IoArgoprojWorkflowV1alpha1CreateCronWorkflowRequest;
@@ -41,11 +42,12 @@ public class CreateCronWorkflow {
         );
 
         cronWorkflowCreateRequest.setCronWorkflow(cronWorkflow);
+        System.out.println(new Gson().toJson(cronWorkflowCreateRequest));
 
         try {
             IoArgoprojWorkflowV1alpha1CronWorkflow result =
                     apiInstance.cronWorkflowServiceCreateCronWorkflow(workflowClient.namespace, cronWorkflowCreateRequest);
-            System.out.println(result);
+            // System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling WorkflowServiceApi#workflowServiceCreateWorkflow");
             System.err.println("Status code: " + e.getCode());
