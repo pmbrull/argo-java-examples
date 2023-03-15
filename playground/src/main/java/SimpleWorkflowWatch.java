@@ -42,6 +42,8 @@ public class SimpleWorkflowWatch {
       // Create the workflow
       IoArgoprojWorkflowV1alpha1Workflow created = apiInstance.workflowServiceCreateWorkflow(workflowClient.namespace, workflowCreateRequest);
 
+      Thread.sleep(5 * 1000);
+
       // This will throw an APIException due to a timeout, way before the 120 seconds
       // The whalesay command also finished successfully in just 20 sec
       apiInstance.workflowServiceWatchWorkflows(
@@ -65,6 +67,8 @@ public class SimpleWorkflowWatch {
       System.err.println("Reason: " + e.getResponseBody());
       System.err.println("Response headers: " + e.getResponseHeaders());
       e.printStackTrace();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
     }
   }
 }
